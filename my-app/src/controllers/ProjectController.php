@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+namespace App;
+
+use App\Controller\AppController;
+
+
+
 require_once __DIR__ . '/AppController.php';
 
 final class ProjectController extends AppController

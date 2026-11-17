@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: docker/nginx/Dockerfile
     ports:
-      - "8080:80"
+      - "${APP_PORT:-8080}:80"
     volumes:
       - .:/app
     depends_on:
@@ -20,6 +20,56 @@ services:
       - .:/app
     networks:
       - app-network
+      - pg-network
+
+  db:
+    build:
+      context: .
+      dockerfile: docker/db/Dockerfile
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wdpai}
+      POSTGRES_USER: ${POSTGRES_USER:-wdpai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wdpai}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./docker/db:/docker-entrypoint-initdb.d
+    networks:
+      - pg-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+    networks:
+      - pg-network
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - pg-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ${PGADMIN_CONTAINER_NAME:-pgadmin}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - pg-network
 
 networks:
   app-network:
+  pg-network:
+
+volumes:
+  pg-data:
+  ollama-data:

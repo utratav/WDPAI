@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+namespace App\Controller;
+
+
 require_once __DIR__ . '/AppController.php';
 
 
